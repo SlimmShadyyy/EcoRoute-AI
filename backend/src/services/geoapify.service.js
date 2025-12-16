@@ -10,11 +10,17 @@ export async function geocodePlaces(locations) {
       {
         params: {
           text: place,
+          filter: "countrycode:in", // 🔥 CRITICAL
+          limit: 1,
           format: "json",
           apiKey: env.GEOAPIFY_API_KEY
         }
       }
     );
+
+    if (!res.data.results || res.data.results.length === 0) {
+      throw new Error(`Could not geocode place: ${place}`);
+    }
 
     results.push({
       name: place,
