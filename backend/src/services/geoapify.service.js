@@ -29,16 +29,14 @@ export async function geocodePlaces(locations) {
 export async function getRouteDistance(points) {
   const waypoints = points.map(p => `${p.lat},${p.lon}`).join("|");
 
-  const res = await axios.get(
-    "https://api.geoapify.com/v1/routing",
-    {
-      params: {
-        waypoints,
-        mode: "drive",
-        apiKey: env.GEOAPIFY_API_KEY
-      }
-    }
-  );
+  const res = await axios.get("https://api.geoapify.com/v1/geocode/search", {
+  params: {
+    text: place,
+    filter: "countrycode:in",   
+    limit: 1,
+    apiKey: GEOAPIFY_KEY
+  }
+});;
 
   return res.data.features[0].properties.distance / 1000;
 }
