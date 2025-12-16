@@ -13,37 +13,55 @@ export async function analyzeEcoImpact(req, res) {
       });
     }
 
-    // 1️⃣ Geocode
+    // 1️⃣ Geocode all locations
     const coords = await geocodePlaces(locations);
 
-    // 2️⃣ Optimize order
+    // 2️⃣ NORMAL route (as user entered)
+    const normalDistanceKm = await getRouteDistance(coords);
+    const normalCarbonKg = calculateCarbon(normalDistanceKm, vehicleType);
+
+    // 3️⃣ OPTIMIZED route (TSP)
     const optimizedRoute = solveTSP(coords);
+    const optimizedDistanceKm = await getRouteDistance(optimizedRoute);
+    const optimizedCarbonKg = calculateCarbon(optimizedDistanceKm, vehicleType);
 
-    // 3️⃣ Distance calculation
-    const distanceKm = await getRouteDistance(optimizedRoute);
+    const rawCarbonSaved = normalCarbonKg - optimizedCarbonKg;
 
-    // 4️⃣ Carbon emission
-    const carbonEmissionKg = calculateCarbon(distanceKm, vehicleType);
+    // Ensure no negative / NaN values (edge-case safe)
+    const carbonSavedKg = Number.isFinite(rawCarbonSaved)
+      ? Math.max(rawCarbonSaved, 0)
+      : 0;
 
-    // 5️⃣ AI explanation
+
+    // 5️⃣ AI explanation (now with comparison 🔥)
     const aiExplanation = await generateExplanation({
-      distance: distanceKm,
-      carbonEmission: carbonEmissionKg,
-      vehicleType
+      distance: optimizedDistanceKm,
+      carbonEmission: optimizedCarbonKg,
+      vehicleType,
+      carbonSaved: carbonSavedKg
     });
 
     // 6️⃣ Final response
     res.json({
       optimizedRoute: optimizedRoute.map(p => p.name),
-      distanceKm: Number(distanceKm.toFixed(2)),
-      carbonEmissionKg: Number(carbonEmissionKg.toFixed(2)),
+
+      normalDistanceKm: Number(normalDistanceKm.toFixed(2)),
+      optimizedDistanceKm: Number(optimizedDistanceKm.toFixed(2)),
+
+      normalCarbonKg: Number(normalCarbonKg.toFixed(2)),
+      optimizedCarbonKg: Number(optimizedCarbonKg.toFixed(2)),
+
+      carbonSavedKg: Number(carbonSavedKg.toFixed(2)),
       aiExplanation
     });
 
   } catch (error) {
-    console.error("EcoImpact Pipeline Error:", error);
-    res.status(500).json({
-      error: "EcoImpact analysis failed"
-    });
+  console.error("EcoImpact Pipeline Error 🔴");
+  console.error(error);
+  console.error(error?.response?.data);
+
+  res.status(500).json({
+    error: error.message || "EcoImpact analysis failed"
+  });
   }
 }

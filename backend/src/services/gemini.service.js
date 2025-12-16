@@ -1,27 +1,32 @@
 import { GoogleGenAI } from "@google/genai";
 import { env } from "../config/env.js";
 
-// Client reads GEMINI_API_KEY from env automatically
+// ✅ CREATE THE AI CLIENT (THIS WAS MISSING)
 const ai = new GoogleGenAI({
   apiKey: env.GEMINI_API_KEY
 });
 
-export async function generateExplanation({ distance, carbonEmission, vehicleType }) {
+export async function generateExplanation({
+  distance,
+  carbonEmission,
+  vehicleType,
+  carbonSaved
+}) {
   try {
     const prompt = `
 You are an environmental sustainability assistant.
 
 A user is traveling using a ${vehicleType} vehicle.
-Total distance: ${distance.toFixed(2)} km
-Estimated carbon emission: ${carbonEmission.toFixed(2)} kg CO2.
+Optimized route distance: ${distance.toFixed(2)} km
+Carbon emission for optimized route: ${carbonEmission.toFixed(2)} kg CO2
+Carbon saved compared to a non-optimized route: ${Number(carbonSaved).toFixed(2)} kg CO2
 
 Explain in simple, friendly language:
-- Why this route is environmentally efficient
-- What the carbon emission means in real life
+- How route optimization helped reduce emissions
+- What the carbon savings mean in real-world terms
 - Give 2 eco-friendly travel tips
-Keep it concise.
-Also briefly mention how choosing an optimized route helps reduce emissions compared to a longer or inefficient route.
 
+Keep it concise and non-technical.
 `;
 
     const response = await ai.models.generateContent({
@@ -32,7 +37,7 @@ Also briefly mention how choosing an optimized route helps reduce emissions comp
     return response.text;
 
   } catch (error) {
-    console.error("Gemini NEW SDK error:", error);
+    console.error("Gemini error:", error);
     throw new Error("Gemini generation failed");
   }
 }
