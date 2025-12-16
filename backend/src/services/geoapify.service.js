@@ -26,17 +26,26 @@ export async function geocodePlaces(locations) {
   return results;
 }
 
-export async function getRouteDistance(points) {
-  const waypoints = points.map(p => `${p.lat},${p.lon}`).join("|");
-
-  const res = await axios.get("https://api.geoapify.com/v1/geocode/search", {
-  params: {
-    text: place,
-    filter: "countrycode:in",   
-    limit: 1,
-    apiKey: GEOAPIFY_KEY
+export async function getRouteDistance(coords) {
+  if (!coords || coords.length < 2) {
+    throw new Error("At least two coordinates required for routing");
   }
-});;
+
+  const waypoints = coords
+    .map(c => `${c.lat},${c.lon}`)
+    .join("|");
+
+  const res = await axios.get(
+    "https://api.geoapify.com/v1/routing",
+    {
+      params: {
+        waypoints,
+        mode: "drive",
+        apiKey: process.env.GEOAPIFY_API_KEY
+      }
+    }
+  );
 
   return res.data.features[0].properties.distance / 1000;
 }
+
