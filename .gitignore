@@ -1,3 +1,6 @@
 node_modules
 .env
+<<<<<<< HEAD
 .env.local
+=======
+>>>>>>> 28c7b654269bcba85500d87a25aaee235183bddb
