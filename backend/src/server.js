@@ -16,7 +16,7 @@ const __dirname = new URL(".", import.meta.url).pathname;
 // 🔹 serve frontend
 app.use(express.static(path.join(__dirname, "../../frontend/.next")));
 
-app.get("*", (req, res) => {
+app.get("/*", (req, res) => {
   res.sendFile(
     path.join(__dirname, "../../frontend/.next/server/pages/index.html")
   );
