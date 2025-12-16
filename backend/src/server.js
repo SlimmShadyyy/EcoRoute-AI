@@ -1,9 +1,19 @@
+import express from "express";
 import path from "path";
-import app from "./app.js";
-import { env } from "./config/env.js";
+import dotenv from "dotenv";
+
+dotenv.config();
+
+const app = express();
+
+app.use(express.json());
+
+// 🔹 your API routes go HERE
+// app.post("/api/ecoimpact/analyze", analyzeEcoImpact);
 
 const __dirname = new URL(".", import.meta.url).pathname;
 
+// 🔹 serve frontend
 app.use(express.static(path.join(__dirname, "../../frontend/.next")));
 
 app.get("*", (req, res) => {
@@ -12,6 +22,7 @@ app.get("*", (req, res) => {
   );
 });
 
-app.listen(env.PORT, () => {
-  console.log(`Backend running on port ${env.PORT}`);
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`Backend running on port ${PORT}`);
 });
