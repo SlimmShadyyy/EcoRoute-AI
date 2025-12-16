@@ -17,7 +17,7 @@ const __dirname = new URL(".", import.meta.url).pathname;
 app.use(express.static(path.join(__dirname, "../../frontend/.next")));
 
 // Serve frontend for all non-API routes
-app.get(/^(?!\/api).*/, (req, res) => {
+app.get('/', (req, res) => {
   res.sendFile(
     path.join(__dirname, "../../frontend/.next/server/pages/index.html")
   );
