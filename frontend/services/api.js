@@ -1,10 +1,12 @@
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
+
 export async function analyzeEcoImpact(payload) {
-  const res = await fetch("http://localhost:5000/api/ecoimpact/analyze", {
+  const res = await fetch(`${API_URL}/api/ecoimpact/analyze`, {
     method: "POST",
     headers: {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
     },
-    body: JSON.stringify(payload)
+    body: JSON.stringify(payload),
   });
 
   const data = await res.json();
@@ -13,7 +15,7 @@ export async function analyzeEcoImpact(payload) {
     console.error("Backend error:", data);
     return {
       error: true,
-      message: data?.error || "Something went wrong"
+      message: data?.error || "Something went wrong",
     };
   }
 
