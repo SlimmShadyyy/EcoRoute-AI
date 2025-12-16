@@ -21,39 +21,48 @@ export async function analyzeEcoImpact(req, res) {
     const normalCarbonKg = calculateCarbon(normalDistanceKm, vehicleType);
 
     // 3️⃣ OPTIMIZED route (TSP)
-    const optimizedRoute = solveTSP(coords);
-    const optimizedDistanceKm = await getRouteDistance(optimizedRoute);
-    const optimizedCarbonKg = calculateCarbon(optimizedDistanceKm, vehicleType);
+    const tspRoute = solveTSP(coords);
+    const tspDistanceKm = await getRouteDistance(tspRoute);
 
-    const rawCarbonSaved = normalCarbonKg - optimizedCarbonKg;
+    // 4️⃣ Decide final route
+    let finalRoute = tspRoute;
+    let finalDistanceKm = tspDistanceKm;
 
-    // Ensure no negative / NaN values (edge-case safe)
-    const carbonSavedKg = Number.isFinite(rawCarbonSaved)
-      ? Math.max(rawCarbonSaved, 0)
-      : 0;
+    if (tspDistanceKm >= normalDistanceKm) {
+      finalRoute = coords;
+      finalDistanceKm = normalDistanceKm;
+    }
 
+    // 5️⃣ Carbon calculation (ONLY optimized here)
+    const optimizedCarbonKg = calculateCarbon(finalDistanceKm, vehicleType);
+    const carbonSavedKg = Math.max(normalCarbonKg - optimizedCarbonKg, 0);
 
-    // 5️⃣ AI explanation (now with comparison 🔥)
+    // 6️⃣ AI explanation
     const aiExplanation = await generateExplanation({
-      distance: optimizedDistanceKm,
+      distance: finalDistanceKm,
       carbonEmission: optimizedCarbonKg,
+      carbonSavedKg,
       vehicleType,
-      carbonSaved: carbonSavedKg
     });
 
-    // 6️⃣ Final response
+    // 7️⃣ RESPONSE
     res.json({
-      optimizedRoute: optimizedRoute.map(p => p.name),
+      optimizedRoute: finalRoute.map(p => p.name),
+      optimizedCoordinates: finalRoute.map(p => [p.lat, p.lon]),
 
       normalDistanceKm: Number(normalDistanceKm.toFixed(2)),
-      optimizedDistanceKm: Number(optimizedDistanceKm.toFixed(2)),
+      optimizedDistanceKm: Number(finalDistanceKm.toFixed(2)),
 
       normalCarbonKg: Number(normalCarbonKg.toFixed(2)),
       optimizedCarbonKg: Number(optimizedCarbonKg.toFixed(2)),
 
       carbonSavedKg: Number(carbonSavedKg.toFixed(2)),
-      aiExplanation
-    });
+      aiExplanation,
+  });
+
+
+    
+
 
   } catch (error) {
   console.error("EcoImpact Pipeline Error 🔴");
