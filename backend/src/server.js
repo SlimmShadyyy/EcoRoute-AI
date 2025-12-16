@@ -16,11 +16,13 @@ const __dirname = new URL(".", import.meta.url).pathname;
 // 🔹 serve frontend
 app.use(express.static(path.join(__dirname, "../../frontend/.next")));
 
-app.get("/*", (req, res) => {
+// Serve frontend for all non-API routes
+app.get(/^(?!\/api).*/, (req, res) => {
   res.sendFile(
     path.join(__dirname, "../../frontend/.next/server/pages/index.html")
   );
 });
+
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
