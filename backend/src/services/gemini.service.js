@@ -1,43 +1,48 @@
-import { GoogleGenAI } from "@google/genai";
-import { env } from "../config/env.js";
-
-// ✅ CREATE THE AI CLIENT (THIS WAS MISSING)
-const ai = new GoogleGenAI({
-  apiKey: env.GEMINI_API_KEY
-});
-
 export async function generateExplanation({
-  distance,
-  carbonEmission,
-  vehicleType,
-  carbonSaved
+  distance = 0,
+  carbonEmission = 0,
+  vehicleType = "vehicle",
+  carbonSavedKg = 0,
 }) {
+
+  // 🚀 EARLY EXIT (put this at the TOP of the function)
+  if (carbonSavedKg === 0) {
+    return `
+You already chose the most efficient route for this trip 🌱  
+That means there was no extra carbon to save — which is actually a good thing.
+
+This shows smart planning from the start.  
+For future trips, smooth driving and proper tire pressure can still help keep emissions low.
+`;
+  }
+
+  // ⬇️ Gemini only runs if savings > 0
   try {
     const prompt = `
-You are an environmental sustainability assistant.
+Vehicle: ${vehicleType}
+Distance: ${distance.toFixed(2)} km
+Carbon emission: ${carbonEmission.toFixed(2)} kg CO2
+Carbon saved: ${carbonSavedKg.toFixed(2)} kg CO2
 
-A user is traveling using a ${vehicleType} vehicle.
-Optimized route distance: ${distance.toFixed(2)} km
-Carbon emission for optimized route: ${carbonEmission.toFixed(2)} kg CO2
-Carbon saved compared to a non-optimized route: ${Number(carbonSaved).toFixed(2)} kg CO2
-
-Explain in simple, friendly language:
-- How route optimization helped reduce emissions
-- What the carbon savings mean in real-world terms
-- Give 2 eco-friendly travel tips
-
-Keep it concise and non-technical.
+Explain clearly:
+- Why this route is eco-friendly
+- What the savings mean
+- Give 2 eco tips
 `;
 
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
-      contents: prompt
+      contents: prompt,
     });
 
     return response.text;
+  } catch (err) {
+    console.error("Gemini failed, using fallback", err);
 
-  } catch (error) {
-    console.error("Gemini error:", error);
-    throw new Error("Gemini generation failed");
+    return `
+Shorter routes reduce fuel usage and emissions.
+You saved ${carbonSavedKg.toFixed(2)} kg of CO₂ — nice work 🌍
+Drive smoothly and keep tires inflated for even better efficiency.
+`;
   }
 }
