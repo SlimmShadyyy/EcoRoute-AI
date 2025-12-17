@@ -11,7 +11,7 @@ import {
 import { useEffect, useRef } from "react";
 import L from "leaflet";
 
-// Fix marker icons (Vercel-safe)
+// Fix marker icons
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl:
@@ -22,22 +22,22 @@ L.Icon.Default.mergeOptions({
     "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
 });
 
+// Fit bounds once per route
 function FitOnce({ coordinates }) {
   const map = useMap();
-  const hasFitted = useRef(false);
+  const fitted = useRef(false);
 
   useEffect(() => {
-    if (!coordinates || coordinates.length < 2 || hasFitted.current) return;
-
+    if (!coordinates?.length || fitted.current) return;
     map.fitBounds(coordinates, { padding: [40, 40] });
-    hasFitted.current = true;
+    fitted.current = true;
   }, [coordinates, map]);
 
   return null;
 }
 
-export default function MapView({ coordinates, color, onMount }) {
-  const safeCoordinates = coordinates?.filter(
+export default function MapView({ coordinates = [], color }) {
+  const safeCoordinates = coordinates.filter(
     (c) =>
       Array.isArray(c) &&
       c.length === 2 &&
@@ -45,42 +45,34 @@ export default function MapView({ coordinates, color, onMount }) {
       typeof c[1] === "number"
   );
 
-  useEffect(() => {
-    onMount?.(); // ✅ loader stops immediately
-  }, []);
-
-  if (!safeCoordinates || safeCoordinates.length < 2) return null;
-
   return (
     <div className="h-full w-full">
       <MapContainer
-        center={safeCoordinates[0]}
-        zoom={6}
-        minZoom={4}
-        maxZoom={12}
+        center={safeCoordinates[0] || [20.5937, 78.9629]} // India fallback
+        zoom={5}
         className="h-full w-full"
         preferCanvas
       >
-        <TileLayer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          updateWhenIdle
-          keepBuffer={2}
-        />
+        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
 
-        <FitOnce coordinates={safeCoordinates} />
+        {safeCoordinates.length >= 2 && (
+          <>
+            <FitOnce coordinates={safeCoordinates} />
 
-        <Marker position={safeCoordinates[0]}>
-          <Popup>Start</Popup>
-        </Marker>
+            <Marker position={safeCoordinates[0]}>
+              <Popup>Start</Popup>
+            </Marker>
 
-        <Marker position={safeCoordinates[safeCoordinates.length - 1]}>
-          <Popup>Destination</Popup>
-        </Marker>
+            <Marker position={safeCoordinates[safeCoordinates.length - 1]}>
+              <Popup>Destination</Popup>
+            </Marker>
 
-        <Polyline
-          positions={safeCoordinates}
-          pathOptions={{ color, weight: 5 }}
-        />
+            <Polyline
+              positions={safeCoordinates}
+              pathOptions={{ color, weight: 5 }}
+            />
+          </>
+        )}
       </MapContainer>
     </div>
   );
