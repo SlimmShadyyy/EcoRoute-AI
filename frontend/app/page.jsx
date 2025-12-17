@@ -174,6 +174,7 @@ export default function Home() {
           )}
 
           <MapView
+            key={routeType}
             coordinates={
               routeType === "eco"
                 ? result?.optimizedCoordinates
