@@ -181,7 +181,7 @@ export default function Home() {
                 : result?.normalCoordinates
             }
             color={routeType === "eco" ? "#16a34a" : "#dc2626"}
-            onMapReady={() => setLoadingMap(false)}
+            onMount={() => setLoadingMap(false)}
           />
         </div>
 
