@@ -17,6 +17,7 @@ export default function Home() {
   const [loadingAI, setLoadingAI] = useState(false);
   const [loadingMap, setLoadingMap] = useState(false);
   const [routeType, setRouteType] = useState("eco");
+  const [vehicleType, setVehicleType] = useState("petrol");
 
   const handleTest = async () => {
     if (!locationsInput.trim()) {
@@ -43,7 +44,7 @@ export default function Home() {
 
     const payload = {
       locations,
-      vehicleType: "petrol",
+      vehicleType,
     };
 
     try {
@@ -70,10 +71,17 @@ export default function Home() {
             EcoRoute AI 🌱
           </h1>
 
-          <p className="text-gray-600 mb-8">
-            AI-powered route optimization to reduce carbon emissions
-          </p>
-
+          <div className="mb-6 rounded-2xl bg-emerald-50 border border-emerald-200 p-5 text-left">
+            <h2 className="text-lg font-semibold text-emerald-800 mb-1">
+              What does EcoRoute AI do?
+            </h2>
+            <p className="text-sm text-emerald-700">
+              Enter multiple locations and EcoRoute AI compares a normal travel route
+              with an eco-optimized route. It calculates carbon emissions, shows how
+              much CO₂ you can save, and visualizes the impact on a live map.
+            </p>
+          </div>
+          
           <input
             type="text"
             placeholder="Enter locations (e.g. Bangalore, Vellore, Chennai)"
@@ -81,7 +89,20 @@ export default function Home() {
             onChange={(e) => setLocationsInput(e.target.value)}
             className="w-full mb-6 px-5 py-4 rounded-2xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-gray-700"
           />
-
+          <div className="mb-6 text-left">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Vehicle Type
+            </label>
+            <select
+              value={vehicleType}
+              onChange={(e) => setVehicleType(e.target.value)}
+              className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            >
+              <option value="petrol">🚗 Petrol Car</option>
+              <option value="diesel">🚙 Diesel Car</option>
+              <option value="ev">⚡ Electric Vehicle</option>
+            </select>
+          </div>
           <button
             onClick={handleTest}
             disabled={loadingAI}
