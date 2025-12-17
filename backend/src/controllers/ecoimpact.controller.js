@@ -27,16 +27,16 @@ export async function analyzeEcoImpact(req, res) {
 
     // 4️⃣ Decide FINAL route
     let finalRoute = tspRoute;
-    let finalRouteData = tspRouteData;
-
+    let finalDistanceKm = tspRouteData.distanceKm;
+    
     if (tspRouteData.distanceKm >= normalDistanceKm) {
       finalRoute = coords;
-      finalRouteData = normalRouteData;
+      finalDistanceKm = normalDistanceKm;
     }
 
     // 5️⃣ Carbon
     const optimizedCarbonKg = calculateCarbon(
-      finalRouteData.distanceKm,
+      finalDistanceKm,
       vehicleType
     );
 
@@ -47,28 +47,31 @@ export async function analyzeEcoImpact(req, res) {
 
     // 6️⃣ AI explanation
     const aiExplanation = await generateExplanation({
-      distance: finalRouteData.distanceKm,
+      distance: finalDistanceKm,
       carbonEmission: optimizedCarbonKg,
       carbonSavedKg,
       vehicleType,
     });
 
-    // 7️⃣ RESPONSE (THIS is what frontend needs)
-    res.json({
-      optimizedRoute: finalRoute.map(p => p.name),
+    const toCoords = (arr) =>
+    arr.map((p) => [Number(p.lat), Number(p.lon)]);
+  
+  res.json({
+    optimizedRoute: finalRoute.map((p) => p.name),
+  
+    normalCoordinates: toCoords(coords),
+    optimizedCoordinates: toCoords(finalRoute),
+  
+    normalDistanceKm: Number(normalDistanceKm.toFixed(2)),
+    optimizedDistanceKm: Number(finalDistanceKm.toFixed(2)),
+  
+    normalCarbonKg: Number(normalCarbonKg.toFixed(2)),
+    optimizedCarbonKg: Number(optimizedCarbonKg.toFixed(2)),
+  
+    carbonSavedKg: Number(carbonSavedKg.toFixed(2)),
+    aiExplanation,
+  });
 
-      normalCoordinates: normalRouteData.geometry,
-      optimizedCoordinates: finalRouteData.geometry,
-
-      normalDistanceKm: Number(normalDistanceKm.toFixed(2)),
-      optimizedDistanceKm: Number(finalRouteData.distanceKm.toFixed(2)),
-
-      normalCarbonKg: Number(normalCarbonKg.toFixed(2)),
-      optimizedCarbonKg: Number(optimizedCarbonKg.toFixed(2)),
-
-      carbonSavedKg: Number(carbonSavedKg.toFixed(2)),
-      aiExplanation,
-    });
 
   } catch (error) {
     console.error("EcoImpact Pipeline Error 🔴", error);
