@@ -16,12 +16,15 @@ export default function Home() {
   const [locationsInput, setLocationsInput] = useState("");
   const [loadingAI, setLoadingAI] = useState(false);
   const [loadingMap, setLoadingMap] = useState(false);
+  const [routeType, setRouteType] = useState("eco");
 
   const handleTest = async () => {
     if (!locationsInput.trim()) {
       setError("Please enter at least two locations.");
       return;
     }
+    
+    setRouteType("eco");
 
     const locations = locationsInput
       .split(",")
@@ -112,17 +115,50 @@ export default function Home() {
   <div className="mt-12 space-y-8 text-left">
         <ResultCards data={result} />
         <ExplanationBox text={result.aiExplanation} />
+        {/* ROUTE TOGGLE */}
+        <div className="flex justify-center gap-3 mb-4">
+          <button
+            onClick={() => setRouteType("normal")}
+            className={`px-5 py-2 rounded-full text-sm font-semibold transition
+              ${
+                routeType === "normal"
+                  ? "bg-red-600 text-white"
+                  : "bg-red-100 text-red-700 hover:bg-red-200"
+              }`}
+          >
+            🔴 Normal Route
+          </button>
+        
+          <button
+            onClick={() => setRouteType("eco")}
+            className={`px-5 py-2 rounded-full text-sm font-semibold transition
+              ${
+                routeType === "eco"
+                  ? "bg-emerald-600 text-white"
+                  : "bg-emerald-100 text-emerald-700 hover:bg-emerald-200"
+              }`}
+          >
+            🌱 Eco Route
+          </button>
+        </div>
         <div className="mt-10 relative h-[420px] rounded-3xl overflow-hidden shadow-xl border border-emerald-200">
           {loadingMap && (
             <div className="absolute inset-0 z-10 flex items-center justify-center bg-emerald-50">
               <p className="text-emerald-700 font-medium animate-pulse">
-                🗺️ Loading optimized route…
+                {routeType === "eco"
+                  ? "🗺️ Loading eco-friendly route…"
+                  : "🗺️ Loading normal route…"}
               </p>
             </div>
           )}
 
           <MapView
-            coordinates={result.optimizedCoordinates}
+            coordinates={
+              routeType === "eco"
+                ? result?.optimizedCoordinates
+                : result?.normalCoordinates
+            }
+            color={routeType === "eco" ? "#16a34a" : "#dc2626"}
             onMapReady={() => setLoadingMap(false)}
           />
         </div>
