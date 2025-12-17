@@ -10,10 +10,11 @@ export async function geocodePlaces(locations) {
       {
         params: {
           text: place,
-          filter: "countrycode:in", // 🔥 CRITICAL
-          limit: 1,
           format: "json",
-          apiKey: env.GEOAPIFY_API_KEY
+          apiKey: env.GEOAPIFY_API_KEY,
+          country: "IN",          
+          limit: 1,              
+          bias: "countrycode:in"  
         }
       }
     );
