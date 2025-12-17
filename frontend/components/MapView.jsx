@@ -45,8 +45,10 @@ export default function MapView({ coordinates, color, onMapReady }) {
       <MapContainer
         center={coordinates[0]}
         zoom={6}
+        minZoom={4}
+        maxZoom={12}
         className="h-full w-full"
-        preferCanvas={true} // 🚀 performance boost
+        preferCanvas
       >
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -56,18 +58,19 @@ export default function MapView({ coordinates, color, onMapReady }) {
 
         <FitOnce coordinates={coordinates} onMapReady={onMapReady} />
 
-        {coordinates.map((pos, index) => (
-          <Marker key={index} position={pos}>
-            <Popup>Stop {index + 1}</Popup>
-          </Marker>
-        ))}
+        {/* Start marker */}
+        <Marker position={coordinates[0]}>
+          <Popup>Start</Popup>
+        </Marker>
+        
+        {/* End marker */}
+        <Marker position={coordinates[coordinates.length - 1]}>
+          <Popup>Destination</Popup>
+        </Marker>
 
         <Polyline
-          key={color}
           positions={coordinates}
-          color={color}
-          weight={5}
-          smoothFactor={1.5}
+          pathOptions={{ color, weight: 5 }}
         />
       </MapContainer>
     </div>
