@@ -9,12 +9,10 @@ import {
   useMap,
 } from "react-leaflet";
 import { useEffect } from "react";
-import "leaflet/dist/leaflet.css";
-
 import L from "leaflet";
 
+// ✅ Fix missing marker icons on Vercel / Next
 delete L.Icon.Default.prototype._getIconUrl;
-
 L.Icon.Default.mergeOptions({
   iconRetinaUrl:
     "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
@@ -24,17 +22,17 @@ L.Icon.Default.mergeOptions({
     "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
 });
 
-
+// 👇 Fits map bounds whenever route changes
 function FitBounds({ coordinates, onMapReady }) {
   const map = useMap();
 
   useEffect(() => {
-    if (!coordinates?.length) return;
+    if (!coordinates || coordinates.length === 0) return;
 
-    // tiny delay = smoother mount
+    // small delay = smoother render
     const timer = setTimeout(() => {
-      map.fitBounds(coordinates, { padding: [40, 40] });
-      onMapReady?.(); // tell parent map is ready
+      map.fitBounds(coordinates, { padding: [50, 50] });
+      onMapReady?.(); // ✅ tell parent map is ready
     }, 100);
 
     return () => clearTimeout(timer);
@@ -43,21 +41,17 @@ function FitBounds({ coordinates, onMapReady }) {
   return null;
 }
 
-export default function MapView({ coordinates, onMapReady }) {
+export default function MapView({ coordinates, color, onMapReady }) {
   if (!coordinates || coordinates.length === 0) return null;
 
   return (
-    <div className="h-[400px] w-full">
+    <div className="h-full w-full">
       <MapContainer
         center={coordinates[0]}
         zoom={6}
-        className="h-full w-full rounded-2xl"
-        scrollWheelZoom
+        className="h-full w-full"
       >
-        <TileLayer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution="© OpenStreetMap"
-        />
+        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
 
         <FitBounds coordinates={coordinates} onMapReady={onMapReady} />
 
@@ -67,7 +61,11 @@ export default function MapView({ coordinates, onMapReady }) {
           </Marker>
         ))}
 
-        <Polyline positions={coordinates} color="#16a34a" />
+        <Polyline
+          positions={coordinates}
+          color={color}
+          weight={5}
+        />
       </MapContainer>
     </div>
   );
