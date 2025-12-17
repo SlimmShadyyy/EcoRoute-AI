@@ -11,7 +11,7 @@ import {
 import { useEffect, useRef } from "react";
 import L from "leaflet";
 
-// Fix marker icons
+// Fix marker icons (Vercel-safe)
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl:
@@ -22,12 +22,13 @@ L.Icon.Default.mergeOptions({
     "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
 });
 
+// Fits bounds only once (prevents jitter)
 function FitOnce({ coordinates, onMapReady }) {
   const map = useMap();
   const hasFitted = useRef(false);
 
   useEffect(() => {
-    if (!coordinates?.length || hasFitted.current) return;
+    if (!coordinates || coordinates.length < 2 || hasFitted.current) return;
 
     map.fitBounds(coordinates, { padding: [40, 40] });
     hasFitted.current = true;
@@ -38,12 +39,21 @@ function FitOnce({ coordinates, onMapReady }) {
 }
 
 export default function MapView({ coordinates, color, onMapReady }) {
-  if (!coordinates || coordinates.length === 0) return null;
+  // ✅ HARD SAFETY FILTER
+  const safeCoordinates = coordinates?.filter(
+    (c) =>
+      Array.isArray(c) &&
+      c.length === 2 &&
+      typeof c[0] === "number" &&
+      typeof c[1] === "number"
+  );
+
+  if (!safeCoordinates || safeCoordinates.length < 2) return null;
 
   return (
     <div className="h-full w-full">
       <MapContainer
-        center={coordinates[0]}
+        center={safeCoordinates[0]}
         zoom={6}
         minZoom={4}
         maxZoom={12}
@@ -52,24 +62,29 @@ export default function MapView({ coordinates, color, onMapReady }) {
       >
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          updateWhenIdle={true}
+          updateWhenIdle
           keepBuffer={2}
         />
 
-        <FitOnce coordinates={coordinates} onMapReady={onMapReady} />
+        <FitOnce
+          coordinates={safeCoordinates}
+          onMapReady={onMapReady}
+        />
 
-        {/* Start marker */}
-        <Marker position={coordinates[0]}>
+        {/* Start */}
+        <Marker position={safeCoordinates[0]}>
           <Popup>Start</Popup>
         </Marker>
-        
-        {/* End marker */}
-        <Marker position={coordinates[coordinates.length - 1]}>
+
+        {/* End */}
+        <Marker
+          position={safeCoordinates[safeCoordinates.length - 1]}
+        >
           <Popup>Destination</Popup>
         </Marker>
 
         <Polyline
-          positions={coordinates}
+          positions={safeCoordinates}
           pathOptions={{ color, weight: 5 }}
         />
       </MapContainer>
