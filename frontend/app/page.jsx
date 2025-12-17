@@ -15,7 +15,6 @@ export default function Home() {
   const [error, setError] = useState(null);
   const [locationsInput, setLocationsInput] = useState("");
   const [loadingAI, setLoadingAI] = useState(false);
-  const [loadingMap, setLoadingMap] = useState(false);
   const [routeType, setRouteType] = useState("eco");
   const [vehicleType, setVehicleType] = useState("petrol");
 
@@ -38,7 +37,6 @@ export default function Home() {
     }
 
     setLoadingAI(true);
-    setLoadingMap(false);
     setError(null);
     setResult(null);
 
@@ -55,7 +53,6 @@ export default function Home() {
       } else {
         setResult(response);
         setLoadingAI(false);
-        setLoadingMap(true);
       }
     } catch (err) {
       setError("Something went wrong. Please retry.");
@@ -165,15 +162,7 @@ export default function Home() {
         <div className="mt-10 relative rounded-3xl overflow-hidden shadow-xl border border-emerald-200"
           style={{ height: "420px" }}
         >
-          {loadingMap && (
-            <div className="absolute inset-0 z-10 flex items-center justify-center bg-emerald-50">
-              <p className="text-emerald-700 font-medium animate-pulse">
-                {routeType === "eco"
-                  ? "🗺️ Loading eco-friendly route…"
-                  : "🗺️ Loading normal route…"}
-              </p>
-            </div>
-          )}
+          
 
           <MapView
             coordinates={
