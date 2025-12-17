@@ -48,7 +48,11 @@ export default function MapView({ coordinates, color, onMapReady }) {
       typeof c[1] === "number"
   );
 
-  if (!safeCoordinates || safeCoordinates.length < 2) return null;
+  useEffect(() => {
+    onMount?.();
+  }, []);
+
+  if (!coordinates || coordinates.length === 0) return null;
 
   return (
     <div className="h-full w-full">
