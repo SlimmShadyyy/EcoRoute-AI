@@ -34,10 +34,6 @@ export async function geocodePlaces(locations) {
 }
 
 export async function getRouteDistance(coords) {
-  if (!coords || coords.length < 2) {
-    throw new Error("At least two coordinates required for routing");
-  }
-
   const waypoints = coords
     .map(c => `${c.lat},${c.lon}`)
     .join("|");
@@ -53,6 +49,11 @@ export async function getRouteDistance(coords) {
     }
   );
 
-  return res.data.features[0].properties.distance / 1000;
+  const feature = res.data.features[0];
+
+  return {
+    distanceKm: feature.properties.distance / 1000,
+    geometry: feature.geometry.coordinates.map(([lon, lat]) => [lat, lon])
+  };
 }
 
