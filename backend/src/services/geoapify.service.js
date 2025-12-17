@@ -11,25 +11,31 @@ export async function geocodePlaces(locations) {
         params: {
           text: place,
           format: "json",
-          limit: 1,
-          country: "india", // 🔥 IMPORTANT
+          limit: 5,
+          country: "india",
           apiKey: env.GEOAPIFY_API_KEY,
         },
       }
     );
 
-    if (!res.data.results || res.data.results.length === 0) {
+    console.log("🔎 Geocode response for:", place);
+    console.log(res.data.results);
+
+    const valid = res.data.results?.find(
+      (r) => typeof r.lat === "number" && typeof r.lon === "number"
+    );
+
+    if (!valid) {
       throw new Error(`Could not geocode location: ${place}`);
     }
 
-    const loc = res.data.results[0];
-
     results.push({
       name: place,
-      lat: Number(loc.lat),
-      lon: Number(loc.lon),
+      lat: Number(valid.lat),
+      lon: Number(valid.lon),
     });
   }
+
   return results;
 }
 
