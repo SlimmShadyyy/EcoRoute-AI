@@ -8,10 +8,10 @@ import {
   Popup,
   useMap,
 } from "react-leaflet";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import L from "leaflet";
 
-// ✅ Fix missing marker icons on Vercel / Next
+// Fix marker icons
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl:
@@ -22,20 +22,16 @@ L.Icon.Default.mergeOptions({
     "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
 });
 
-// 👇 Fits map bounds whenever route changes
-function FitBounds({ coordinates, onMapReady }) {
+function FitOnce({ coordinates, onMapReady }) {
   const map = useMap();
+  const hasFitted = useRef(false);
 
   useEffect(() => {
-    if (!coordinates || coordinates.length === 0) return;
+    if (!coordinates?.length || hasFitted.current) return;
 
-    // small delay = smoother render
-    const timer = setTimeout(() => {
-      map.fitBounds(coordinates, { padding: [50, 50] });
-      onMapReady?.(); // ✅ tell parent map is ready
-    }, 100);
-
-    return () => clearTimeout(timer);
+    map.fitBounds(coordinates, { padding: [40, 40] });
+    hasFitted.current = true;
+    onMapReady?.();
   }, [coordinates, map, onMapReady]);
 
   return null;
@@ -50,10 +46,15 @@ export default function MapView({ coordinates, color, onMapReady }) {
         center={coordinates[0]}
         zoom={6}
         className="h-full w-full"
+        preferCanvas={true} // 🚀 performance boost
       >
-        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+        <TileLayer
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          updateWhenIdle={true}
+          keepBuffer={2}
+        />
 
-        <FitBounds coordinates={coordinates} onMapReady={onMapReady} />
+        <FitOnce coordinates={coordinates} onMapReady={onMapReady} />
 
         {coordinates.map((pos, index) => (
           <Marker key={index} position={pos}>
@@ -66,6 +67,7 @@ export default function MapView({ coordinates, color, onMapReady }) {
           positions={coordinates}
           color={color}
           weight={5}
+          smoothFactor={1.5}
         />
       </MapContainer>
     </div>
