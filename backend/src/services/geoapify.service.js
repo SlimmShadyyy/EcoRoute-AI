@@ -49,7 +49,7 @@ export async function getRouteDistance(coords) {
       waypoints,
       mode: "drive",
       details: "route_details",
-      apiKey: GEOAPIFY_API_KEY,
+      apiKey: env.GEOAPIFY_API_KEY,
     },
   });
   
