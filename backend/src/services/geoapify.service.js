@@ -44,16 +44,17 @@ export async function getRouteDistance(coords) {
     .map(c => `${c.lat},${c.lon}`)
     .join("|");
 
-  const res = await axios.get(
-    "https://api.geoapify.com/v1/routing",
-    {
-      params: {
-        waypoints,
-        mode: "drive",
-        apiKey: process.env.GEOAPIFY_API_KEY
-      }
-    }
-  );
+  const res = await axios.get("https://api.geoapify.com/v1/routing", {
+    params: {
+      waypoints,
+      mode: "drive",
+      details: "route_details",
+      apiKey: GEOAPIFY_API_KEY,
+    },
+  });
+  
+  const routeLine = res.data.features[0].geometry.coordinates
+    .map(([lon, lat]) => [lat, lon]);
 
   const feature = res.data.features[0];
 
