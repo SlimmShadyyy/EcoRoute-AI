@@ -50,6 +50,9 @@ export async function analyzeEcoImpact(req, res) {
       optimizedRoute: finalRoute.map(p => p.name),
       optimizedCoordinates: finalRoute.map(p => [p.lat, p.lon]),
 
+      normalCoordinates: coords.map(p => [p.lat, p.lon]),
+      optimizedCoordinates: finalRoute.map(p => [p.lat, p.lon]),
+
       normalDistanceKm: Number(normalDistanceKm.toFixed(2)),
       optimizedDistanceKm: Number(finalDistanceKm.toFixed(2)),
 
