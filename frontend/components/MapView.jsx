@@ -22,8 +22,7 @@ L.Icon.Default.mergeOptions({
     "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
 });
 
-// Fits bounds only once (prevents jitter)
-function FitOnce({ coordinates, onMapReady }) {
+function FitOnce({ coordinates }) {
   const map = useMap();
   const hasFitted = useRef(false);
 
@@ -32,14 +31,12 @@ function FitOnce({ coordinates, onMapReady }) {
 
     map.fitBounds(coordinates, { padding: [40, 40] });
     hasFitted.current = true;
-    onMapReady?.();
-  }, [coordinates, map, onMapReady]);
+  }, [coordinates, map]);
 
   return null;
 }
 
-export default function MapView({ coordinates, color, onMapReady }) {
-  // ✅ HARD SAFETY FILTER
+export default function MapView({ coordinates, color, onMount }) {
   const safeCoordinates = coordinates?.filter(
     (c) =>
       Array.isArray(c) &&
@@ -49,10 +46,10 @@ export default function MapView({ coordinates, color, onMapReady }) {
   );
 
   useEffect(() => {
-    onMount?.();
+    onMount?.(); // ✅ loader stops immediately
   }, []);
 
-  if (!coordinates || coordinates.length === 0) return null;
+  if (!safeCoordinates || safeCoordinates.length < 2) return null;
 
   return (
     <div className="h-full w-full">
@@ -70,20 +67,13 @@ export default function MapView({ coordinates, color, onMapReady }) {
           keepBuffer={2}
         />
 
-        <FitOnce
-          coordinates={safeCoordinates}
-          onMapReady={onMapReady}
-        />
+        <FitOnce coordinates={safeCoordinates} />
 
-        {/* Start */}
         <Marker position={safeCoordinates[0]}>
           <Popup>Start</Popup>
         </Marker>
 
-        {/* End */}
-        <Marker
-          position={safeCoordinates[safeCoordinates.length - 1]}
-        >
+        <Marker position={safeCoordinates[safeCoordinates.length - 1]}>
           <Popup>Destination</Popup>
         </Marker>
 
