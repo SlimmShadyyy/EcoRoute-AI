@@ -162,7 +162,9 @@ export default function Home() {
             🌱 Eco Route
           </button>
         </div>
-        <div className="mt-10 relative h-[420px] rounded-3xl overflow-hidden shadow-xl border border-emerald-200">
+        <div className="mt-10 relative rounded-3xl overflow-hidden shadow-xl border border-emerald-200"
+          style={{ height: "420px" }}
+        >
           {loadingMap && (
             <div className="absolute inset-0 z-10 flex items-center justify-center bg-emerald-50">
               <p className="text-emerald-700 font-medium animate-pulse">
@@ -174,7 +176,6 @@ export default function Home() {
           )}
 
           <MapView
-            key={routeType}
             coordinates={
               routeType === "eco"
                 ? result?.optimizedCoordinates
