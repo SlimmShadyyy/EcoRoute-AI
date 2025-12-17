@@ -11,7 +11,6 @@ import {
 import { useEffect, useRef } from "react";
 import L from "leaflet";
 
-// Fix marker icons
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl:
@@ -22,7 +21,6 @@ L.Icon.Default.mergeOptions({
     "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
 });
 
-// Fit bounds once per route
 function FitOnce({ coordinates }) {
   const map = useMap();
   const fitted = useRef(false);
@@ -46,14 +44,17 @@ export default function MapView({ coordinates = [], color }) {
   );
 
   return (
-    <div className="h-full w-full">
+    <div style={{ height: "100%", width: "100%" }}>
       <MapContainer
-        center={safeCoordinates[0] || [20.5937, 78.9629]} // India fallback
+        center={safeCoordinates[0] || [20.5937, 78.9629]}
         zoom={5}
         className="h-full w-full"
         preferCanvas
       >
-        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+        <TileLayer
+          url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+          attribution="© OpenStreetMap © CARTO"
+        />
 
         {safeCoordinates.length >= 2 && (
           <>
