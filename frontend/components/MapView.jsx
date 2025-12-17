@@ -62,6 +62,7 @@ export default function MapView({ coordinates, color, onMapReady }) {
         ))}
 
         <Polyline
+          key={color}
           positions={coordinates}
           color={color}
           weight={5}
