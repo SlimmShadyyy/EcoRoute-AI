@@ -1,8 +1,8 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenAI } from "@google/genai";
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({
-  model: "gemini-2.5-flash",
+
+const ai = new GoogleGenAI({
+  apiKey: process.env.GEMINI_API_KEY,
 });
 
 export async function generateExplanation({
@@ -11,38 +11,45 @@ export async function generateExplanation({
   vehicleType = "vehicle",
   carbonSavedKg = 0,
 }) {
+
   if (carbonSavedKg === 0) {
     return `
 You already chose the most efficient route 🌱  
-No extra carbon was saved — which actually means great planning.
+That means no extra carbon was saved — which is actually a win.
 
-Keeping steady speeds and proper tire pressure will help keep emissions low.
+Smart routing from the start reduces unnecessary fuel burn.  
+Keeping a steady speed and proper tire pressure will help keep emissions low.
 `;
   }
 
   try {
     const prompt = `
-Vehicle: ${vehicleType}
-Distance: ${distance.toFixed(2)} km
-Carbon emission: ${carbonEmission.toFixed(2)} kg CO2
-Carbon saved: ${carbonSavedKg.toFixed(2)} kg CO2
+Vehicle type: ${vehicleType}
+Distance traveled: ${distance.toFixed(2)} km
+Carbon emitted: ${carbonEmission.toFixed(2)} kg CO₂
+Carbon saved: ${carbonSavedKg.toFixed(2)} kg CO₂
 
-Explain clearly:
+Explain in simple, human language:
 - Why this route is eco-friendly
-- What the savings mean
-- Give 2 eco tips
+- What this carbon saving practically means
+- Give exactly 2 eco-friendly driving tips
 `;
 
-    const result = await model.generateContent(prompt);
-    return result.response.text();
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: prompt,
+    });
+
+    return response.text;
 
   } catch (err) {
     console.error("Gemini failed, using fallback", err);
 
     return `
-Shorter routes reduce fuel usage and emissions.
-You saved ${carbonSavedKg.toFixed(2)} kg of CO₂ 🌍
-Drive smoothly and keep tires inflated for better efficiency.
+By choosing a shorter and more efficient route, fuel consumption was reduced.
+This saved ${carbonSavedKg.toFixed(2)} kg of CO₂ 🌍
+
+Driving smoothly and maintaining proper tire pressure can further improve efficiency.
 `;
   }
 }
