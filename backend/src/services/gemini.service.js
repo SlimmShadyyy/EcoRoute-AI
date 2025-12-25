@@ -1,22 +1,25 @@
+import { GoogleGenerativeAI } from "@google/generative-ai";
+
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const model = genAI.getGenerativeModel({
+  model: "gemini-2.5-flash",
+});
+
 export async function generateExplanation({
   distance = 0,
   carbonEmission = 0,
   vehicleType = "vehicle",
   carbonSavedKg = 0,
 }) {
-
-  // 🚀 EARLY EXIT (put this at the TOP of the function)
   if (carbonSavedKg === 0) {
     return `
-You already chose the most efficient route for this trip 🌱  
-That means there was no extra carbon to save — which is actually a good thing.
+You already chose the most efficient route 🌱  
+No extra carbon was saved — which actually means great planning.
 
-This shows smart planning from the start.  
-For future trips, smooth driving and proper tire pressure can still help keep emissions low.
+Keeping steady speeds and proper tire pressure will help keep emissions low.
 `;
   }
 
-  // ⬇️ Gemini only runs if savings > 0
   try {
     const prompt = `
 Vehicle: ${vehicleType}
@@ -30,19 +33,16 @@ Explain clearly:
 - Give 2 eco tips
 `;
 
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: prompt,
-    });
+    const result = await model.generateContent(prompt);
+    return result.response.text();
 
-    return response.text;
   } catch (err) {
     console.error("Gemini failed, using fallback", err);
 
     return `
 Shorter routes reduce fuel usage and emissions.
-You saved ${carbonSavedKg.toFixed(2)} kg of CO₂ — nice work 🌍
-Drive smoothly and keep tires inflated for even better efficiency.
+You saved ${carbonSavedKg.toFixed(2)} kg of CO₂ 🌍
+Drive smoothly and keep tires inflated for better efficiency.
 `;
   }
 }
